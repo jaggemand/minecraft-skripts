@@ -1,0 +1,37 @@
+#
+# Makes a player vanish from all players if he has the permission 'staff.vanish'
+#
+command /vanish:
+	aliases: /v
+	permission: staff.vanish
+	trigger:
+
+		if {vanish::%player%} is not true:
+
+			hide the player from all players
+			send "<dark gray>[<red>Staff Mode<dark gray>]<light cyan> You Are Now Vanished!"
+			set {vanish::%player%} to true
+
+		else:
+
+			reveal the player from all players
+			send "<dark gray>[<red>Staff Mode<dark gray>]<light cyan> You Are Now Unvanished!"
+			set {vanish::%player%} to false
+
+on join:
+	
+	loop all players:
+
+		if {vanish::%loop-player%} is true:
+
+			reveal the loop-player from all players
+			hide the loop-player from all players
+
+on quit:
+	
+	if {vanish::%player%} is set:
+
+		set {vanish::%player%} to false
+
+
+

@@ -1,0 +1,16 @@
+#
+# A vanilla example of a gui creation using Skript only
+# Requires Skript 2.3+
+#
+
+command /gui:
+	trigger:
+		set {_gui} to a new chest inventory with 1 row with name "Shop"
+		set slot 0 of {_gui} to stone
+		open {_gui} to player
+ 
+on inventory click:
+	if name of event-inventory is "Shop":
+		if index of event-slot = 0:
+			cancel event
+			send "You clicked on slot 0!"

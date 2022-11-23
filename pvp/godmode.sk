@@ -1,0 +1,18 @@
+#
+# Makes a player invulnerable if he has the permission 'skript.god'
+#
+command /godmode:
+	description: Enables or disables godmode
+	permission: godmode.have
+	executable by: player
+	trigger:
+		if {godmode::%player%} is not true:
+			set {godmode::%player%} to true
+			send "<green>Godmode activated<reset>"
+		else:
+			set {godmode::%player%} to false
+			send "<red>Godmode disabled<reset>"
+on damage:
+	victim is a player:
+	if {godmode::%victim%} is true:
+		cancel event

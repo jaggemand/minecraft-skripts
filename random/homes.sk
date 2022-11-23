@@ -1,0 +1,42 @@
+#
+# A simple home script which allows players with the permission 'skript.home' to
+# define a home location with /sethome, delete a home with /delhome and teleport to that location whenever they want to with /home.
+#
+
+command /sethome <string>:
+	description: Sets your home
+	permission: home.sethome
+	executable by: players
+	trigger:
+		set {homes::%uuid of player%::%arg-1%} to player's location
+		message "Home <grey>%arg-1%<reset> set"
+
+command /delhome <string>:
+	description: Deletes your home
+	permission: home.delhome
+	executable by: players
+	trigger:
+		if {homes::%uuid of player%::%arg-1%} is not set:
+			message "Home <grey>%arg-1%<reset> does not exist"
+		else:
+			clear {homes::%uuid of player%::%arg-1%}
+			message "Removed home <grey>%arg-1%<reset>"
+
+command /home <string>:
+	description: Teleports yourself to your home
+	permission: home.teleport
+	executable by: players
+	trigger:
+		if {homes::%uuid of player%::%arg-1%} is not set:
+			message "Home <gray>%arg-1%<reset> does not exist!"
+		else:
+			teleport player to {homes::%uuid of player%::%arg-1%}
+
+command /homes:
+	description: Lists all your homes
+	permission: home.list
+	executable by: players
+	trigger:
+		message "Your homes: "
+		loop {homes::%uuid of player%::*}:
+			message "<gray>%loop-index%"

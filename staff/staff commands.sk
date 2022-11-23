@@ -1,0 +1,230 @@
+#
+# A simple staff script which allows staff memmbers with the permissions 'staff.kick, staff.ban, staff.unban, staff.freeze, staff.unfreeze, staff.mute' to
+# uphold the server rules with /kick, /ban, /unban, /freeze or mute a player with /mute.
+#
+
+options:
+    EnableBypass: false
+    BanOnLeave: /ban %uuid of player% Logged out while frozen!
+
+command /kick [<player>] [<text>]:
+    description: Kicks a player from the server
+    usage: /kick <Player> [<Reason>] [<-s/-silent>]
+    permission: staff.kick
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+        else:
+            send "You cannot kick yourself!"
+        if {EnableBypass} is true:
+            if player has permission "staff.bypass":
+                send "&cYou cannot kick this player!"
+                stop
+        else:
+            kick arg-1 due to "<grey>Kicked for <light red>%arg-2%<reset> <grey>by<reset> <light red>%player%<reset>"
+
+command /ban [<player>] [<text>]:
+    description: Bans a player from the server
+    permission: staff.ban
+    trigger:
+        ban arg-1 due to "<grey>Banned for <light red>%arg-2%<reset> <grey>by<reset> <light red>%player%<reset>"
+
+command /unban <offline player>:
+    description: Unbans a player from the server
+    permission: staff.unban
+    trigger:
+        unban arg-1
+
+command /freeze <player>:
+    description: Freezes a player on the server
+    permission: staff.freeze
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+            if {freeze::%player%} is true:
+                send "<light red>That player is already frozen!<reset>"
+                stop
+            if {EnableBypass} is true:
+                send "&cYou cannot freeze this player!"
+                stop
+            else:
+                set {freeze.%player%} to true
+                send "<green>You have frozen %arg-1%!<reset>"
+                send "<light red>You have been frozen by %player%!<reset>"
+                stop
+        else:
+            send "<light red>You cannot freeze yourself!<reset>"
+
+on player move:
+    if {freeze::%player%} is true:
+        send "<light red>You cannot move while frozen!<reset>"
+        cancel event
+on command:
+    if {freeze::%player%} is true:
+        send "<light red>You cannot use commands while frozen!<reset>"
+        cancel event
+on drop:
+    if {freeze::%player%} is true:
+        send "<light red>You cannot drop items while frozen!<reset>"
+        cancel event
+on pickup:
+    if {freeze::%player%} is true:
+        send "<light red>You cannot pick up items while frozen!<reset>"
+        cancel event
+on damage:
+    victim is a player:
+        if {freeze::%victim%} is true:
+            cancel event
+    attacker is a player:
+        if {freeze::%attacker%} is true:
+            cancel event
+
+command /unfreeze <player>:
+    description: Unfreezes a player on the server
+    permission: staff.unfreeze
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+            if {freeze::%player%} is false:
+                send "<light red>That player is not frozen!<reset>"
+                stop
+            if {EnableBypass} is true:
+                send "&cYou cannot unfreeze this player!"
+                stop
+            set {freeze.%player%} to false
+            send "<green>You have unfrozen %arg-1%!<reset>"
+            send "<light red>You have been unfrozen by %player%!<reset>"
+            stop
+        else:
+            send "<light red>You cannot unfreeze yourself!<reset>"
+            stop
+
+command /mute [<player>] [<text>]:
+    description: Mutes a player on the server
+    permission: staff.mute
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+            if {mute.%player%} is true:
+                send "<light red>That player is already muted!<reset>"
+                stop
+            if {EnableBypass} is true:
+                send "&cYou cannot mute this player!"
+                stop
+            set {mute.%player%} to true
+            send "<green>You have muted %arg-1%!<reset>"
+            send "<light red>You have been muted by %player%!<reset>"
+            stop
+        else:
+            send "<light red>You cannot mute yourself!<reset>"
+            stop
+on chat:
+    if {mute.%player%} is true:
+        send "<light red>You are muted!<reset>"
+        cancel event
+
+command /unmute <player> <text>:
+    description: Unmute a player on the server
+    permission: staff.unmute
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+            if {mute.%player%} is false:
+                send "<light red>That player is not muted!<reset>"
+                stop
+            if {EnableBypass} is true:
+                send "&cYou cannot unmute this player!"
+                stop
+            set {mute.%player%} to false
+            send "<green>You have unmuted %arg-1%!<reset>"
+            send "<light red>You have been unmuted by %player%!<reset>"
+            stop
+        else:
+            send "<light red>You cannot unmute yourself!<reset>"
+            stop
+
+command /invsee <player>:
+    description: See the inventory of a player
+    permission: staff.invsee
+    trigger:
+        open player to sender
+    
+on inventory click:
+        cancel event
+
+command /warnings <player>:
+    description: Gets amount of warnings for a player
+    permission: staff.warnings
+    trigger:
+        if arg-1 is not the player:
+            send "That player is not online"
+            stop
+        else:
+            send "<light red><bold>+<dark grey>--------------%arg-1%'s Warnings--------------<light red><bold>+<reset>"
+            loop {warnings::%player%::*}:
+                send "<dark grey>» <light gray>Reason: <light red>%loop-index% <dark grey>» <light gray>Given By: <light red>%loop-value%<reset>"
+            send "<light red><bold>+<reset><dark grey>----------------------------------------------<light red><bold>+<reset>"
+            stop
+
+command /warn <player> <text>:
+    description: Warns a player on the server
+    permission: staff.warn
+    trigger:
+        if arg-1 is not the player:
+            if arg-1 is not online:
+                send "<light red>That player is not online!<reset>"
+                stop
+            if {EnableBypass} is true:
+                send "&cYou cannot warn this player!"
+                stop
+            send " " to arg-1
+            send "<light red><bold>+<dark grey>--------------Staff-------------<light red><bold>+<reset>" to arg-1
+            send "<dark grey>» &7You have been warned by<dark grey> » <light red>%player%<reset>" to arg-1
+            send " " to arg 1
+            send "<dark grey>» &7For the reason of <dark grey>» &c%arg-2%" to arg-1
+            send "<grey>* <light red>Unfairly warned? Contact a staff member!" to arg-1
+            send "<light red><bold>+<reset><dark grey>-------------------------------<light red><bold>+<reset>" to arg-1
+            send " " to arg-1
+            set {warnings::%player%::%arg-2%} to player
+
+            send "&7You have &asuccessfully &7warned &c%arg-1%"
+            stop
+        else:
+            send "<light red>You cannot warn yourself!<reset>"
+            stop
+
+command /cc:
+	permission: staff.clearchat
+	trigger:
+		loop 200 times:
+			broadcast " "
+		broadcast "<dark grey><strike>--------------------<reset>"
+		broadcast "<dark grey>Chat has been <light red>cleared<reset>"
+		broadcast "<dark grey><strike>--------------------<reset>"
+
+command /staffhelp:
+    description: Shows the staff help menu
+    permission: staff.help
+    trigger:
+        send "<dark grey><strike>------------------------<reset>"
+        send "&6<bold>Staff Help<reset>"
+        send "<dark grey><strike>------------------------<reset>"
+        send "&6/kick <grey>- Kicks a player from the server<reset>"
+        send "&6/ban <grey>- Bans a player from the server<reset>"
+        send "&6/unban <grey>- Unbans a player from the server<reset>"
+        send "&6/freeze <grey>- Freezes a player on the server<reset>"
+        send "&6/unfreeze <grey>- Unfreezes a player on the server<reset>"
+        send "&6/mute <grey>- Mutes a player on the server<reset>"
+        send "&6/unmute <grey>- Unmutes a player on the server<reset>"
+        send "&6/staffhelp <grey>- Shows the staff help menu<reset>"
+        send "<dark grey><strike>------------------------<reset>"

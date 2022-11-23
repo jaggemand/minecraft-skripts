@@ -1,0 +1,31 @@
+#
+# A simple staff chat script which allows staff memmbers with the permissions 'staff.chat to
+# chat in the server staff chat, to discuss staff business.
+#
+options:
+	prefix: <dark gray>[<red>Staff Chat<dark gray>]<white>
+
+command /staffchat [<text>]:
+	description: Chat in the Staff Chat
+	aliases: /sc
+	permission: staff.chat
+	trigger:
+		if arg-1 is not set:
+			if {staffchat::%player's uuid%} is not true:
+				set {staffchat::%player's uuid%} to true
+				send "<dark gray>[<red>Staff Chat<dark gray>]<light cyan> Enabled!"
+			else:
+				set {staffchat::%player's uuid%} to false
+				send "<dark gray>[<red>Staff Chat<dark gray>]<light cyan> Disabled!"
+		else:
+			sendStaff(player, arg-1)
+on chat:
+	if {staffchat::%player's uuid%} is true:
+		cancel event
+		sendStaff(player, message)
+
+function sendStaff(player: player, msg: text):
+	if {_player} has permission "staffchat.send":
+		loop all players:
+			if loop-player has permission "staffchat.receive":
+				send "{@prefix} %{_player}'s displayname%&8: &b%{_msg}%" to loop-player
